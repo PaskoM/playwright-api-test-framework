@@ -1,5 +1,20 @@
 import { test, expect } from "@playwright/test";
 
+let authToken: string;
+
+test.beforeAll("Login and Retrieve Auth Token", async ({ request }) => {
+  const tokenResponse = await request.post(
+    "https://conduit-api.bondaracademy.com/api/users/login",
+    {
+      data: {
+        user: { email: "paskomariola@gmail.com", password: "Mariola1!" },
+      },
+    }
+  );
+  const tokenResponseJson = await tokenResponse.json();
+  authToken = "Token " + tokenResponseJson.user.token;
+});
+
 test("Get Test Tags", async ({ request }) => {
   const tagsResponse = await request.get(
     "https://conduit-api.bondaracademy.com/api/tags"
@@ -20,18 +35,6 @@ test("Get All Articles", async ({ request }) => {
 });
 
 test("Create and Delete Article", async ({ request }) => {
-  //auth
-  const tokenResponse = await request.post(
-    "https://conduit-api.bondaracademy.com/api/users/login",
-    {
-      data: {
-        user: { email: "paskomariola@gmail.com", password: "Mariola1!" },
-      },
-    }
-  );
-  const tokenResponseJson = await tokenResponse.json();
-  const authToken = "Token " + tokenResponseJson.user.token;
-
   //create article
   const newArticleResponse = await request.post(
     "https://conduit-api.bondaracademy.com/api/articles/",
@@ -80,27 +83,15 @@ test("Create and Delete Article", async ({ request }) => {
 });
 
 test("Create, Update and Delete Article", async ({ request }) => {
-  //auth
-  const tokenResponse = await request.post(
-    "https://conduit-api.bondaracademy.com/api/users/login",
-    {
-      data: {
-        user: { email: "paskomariola@gmail.com", password: "Mariola1!" },
-      },
-    }
-  );
-  const tokenResponseJson = await tokenResponse.json();
-  const authToken = "Token " + tokenResponseJson.user.token;
-
   //create article
   const newArticleResponse = await request.post(
     "https://conduit-api.bondaracademy.com/api/articles/",
     {
       data: {
         article: {
-          title: "Test Article ",
-          description: "Test Article Subject",
-          body: "Test Article Description",
+          title: "Test Update Article ",
+          description: "Test Article Subject 2",
+          body: "Test Article Description 2",
           tagList: [],
         },
       },
@@ -111,7 +102,7 @@ test("Create, Update and Delete Article", async ({ request }) => {
   );
   const newArticleResponseJSON = await newArticleResponse.json();
   expect(newArticleResponse.status()).toEqual(201);
-  expect(newArticleResponseJSON.article.title).toEqual("Test Article ");
+  expect(newArticleResponseJSON.article.title).toEqual("Test Update Article ");
   const slugId = newArticleResponseJSON.article.slug;
 
   //update article
