@@ -6,8 +6,9 @@ type Fixtures = {
 };
 
 export const test = base.extend<Fixtures>({
-  api: async ({}, use) => {
-    const requestHandler = new RequestHandler();
+  api: async ({ request }, use) => {
+    const baseURL = "https://conduit-api.bondaracademy.com/api";
+    const requestHandler = new RequestHandler(request, baseURL);
     await use(requestHandler);
   },
 });
