@@ -1,5 +1,5 @@
 import { test } from "../utils/fixtures";
-import { expect } from "@playwright/test";
+import { expect } from "../utils/custom-expect";
 
 let authToken: string;
 
@@ -18,14 +18,14 @@ test("Get articles", async ({ api }) => {
     .path("/articles")
     .params({ limit: 10, offset: 0 })
     .getRequest(200);
-  expect(response.articlesCount).toEqual(10);
-  expect(response.articles.length).toBeLessThanOrEqual(10);
+  expect(response.articlesCount).shouldEqual(10);
+  expect(response.articles.length).shouldBeLessThanOrEqual(10);
 });
 
 test("Get tags", async ({ api }) => {
   const response = await api.path("/tags").getRequest(200);
-  expect(response.tags[0]).toEqual("Test");
-  expect(response.tags.length).toBeLessThanOrEqual(10);
+  expect(response.tags[0]).shouldEqual("Test");
+  expect(response.tags.length).shouldBeLessThanOrEqual(10);
 });
 
 test("Create and delete article", async ({ api }) => {
@@ -42,7 +42,7 @@ test("Create and delete article", async ({ api }) => {
       },
     })
     .postRequest(201);
-  expect(newArticleResponse.article.title).toEqual("Test Article ");
+  expect(newArticleResponse.article.title).shouldEqual("Test Article ");
   const slugId = newArticleResponse.article.slug;
 
   // Verify article creation
@@ -50,7 +50,7 @@ test("Create and delete article", async ({ api }) => {
     .path("/articles")
     .params({ limit: 10, offset: 0 })
     .getRequest(200);
-  expect(articlesListResponse.articles[0].title).toEqual("Test Article ");
+  expect(articlesListResponse.articles[0].title).shouldEqual("Test Article ");
 
   // Delete article
   await api
@@ -62,7 +62,9 @@ test("Create and delete article", async ({ api }) => {
     .path("/articles")
     .params({ limit: 10, offset: 0 })
     .getRequest(200);
-  expect(articlesResponseRow.articles[0].title).not.toEqual("Test Article ");
+  expect(articlesResponseRow.articles[0].title).not.shouldEqual(
+    "Test Article "
+  );
 });
 
 test("Create, Update and Delete article", async ({ api }) => {
@@ -79,7 +81,9 @@ test("Create, Update and Delete article", async ({ api }) => {
       },
     })
     .postRequest(201);
-  expect(newArticleResponse.article.title).toEqual("Test Article to Update");
+  expect(newArticleResponse.article.title).shouldEqual(
+    "Test Article to Update"
+  );
   const slugId = newArticleResponse.article.slug;
 
   // Update article
@@ -95,7 +99,9 @@ test("Create, Update and Delete article", async ({ api }) => {
       },
     })
     .putRequest(200);
-  expect(updatedArticleResponse.article.title).toEqual("Updated Test Article");
+  expect(updatedArticleResponse.article.title).shouldEqual(
+    "Updated Test Article"
+  );
   const newSlugId = updatedArticleResponse.article.slug;
 
   // Delete article
@@ -108,7 +114,7 @@ test("Create, Update and Delete article", async ({ api }) => {
     .path("/articles")
     .params({ limit: 10, offset: 0 })
     .getRequest(200);
-  expect(articlesResponseRow.articles[0].title).not.toEqual(
+  expect(articlesResponseRow.articles[0].title).not.shouldEqual(
     "Updated Test Article"
   );
 });
