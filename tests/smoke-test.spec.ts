@@ -1,12 +1,5 @@
 import { test } from "../utils/fixtures";
 import { expect } from "../utils/custom-expect";
-import { createToken } from "../helpers/createToken";
-
-let authToken: string;
-
-test.beforeAll("Get auth token", async ({ api, config }) => {
-  authToken = await createToken(config.userEmail, config.userPassword);
-});
 
 test("Get articles", async ({ api }) => {
   const response = await api
@@ -27,7 +20,6 @@ test("Create and delete article", async ({ api }) => {
   // Create article
   const newArticleResponse = await api
     .path("/articles/")
-    .headers({ Authorization: authToken })
     .body({
       article: {
         title: "Test Article ",
@@ -48,10 +40,7 @@ test("Create and delete article", async ({ api }) => {
   expect(articlesListResponse.articles[0].title).shouldEqual("Test Article ");
 
   // Delete article
-  await api
-    .path(`/articles/${slugId}`)
-    .headers({ Authorization: authToken })
-    .deleteRequest(204);
+  await api.path(`/articles/${slugId}`).deleteRequest(204);
 
   const articlesResponseRow = await api
     .path("/articles")
@@ -66,7 +55,6 @@ test("Create, Update and Delete article", async ({ api }) => {
   // Create article
   const newArticleResponse = await api
     .path("/articles/")
-    .headers({ Authorization: authToken })
     .body({
       article: {
         title: "Test Article to Update",
@@ -84,7 +72,6 @@ test("Create, Update and Delete article", async ({ api }) => {
   // Update article
   const updatedArticleResponse = await api
     .path(`/articles/${slugId}`)
-    .headers({ Authorization: authToken })
     .body({
       article: {
         title: "Updated Test Article",
@@ -100,10 +87,7 @@ test("Create, Update and Delete article", async ({ api }) => {
   const newSlugId = updatedArticleResponse.article.slug;
 
   // Delete article
-  await api
-    .path(`/articles/${newSlugId}`)
-    .headers({ Authorization: authToken })
-    .deleteRequest(204);
+  await api.path(`/articles/${newSlugId}`).deleteRequest(204);
 
   const articlesResponseRow = await api
     .path("/articles")
