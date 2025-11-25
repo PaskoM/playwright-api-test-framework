@@ -1,7 +1,9 @@
 import fs from "fs/promises";
 import path from "path";
+import Ajv from "ajv";
 
 const SCHEMA_BASE_PATH = "./response-schemas";
+const ajv = new Ajv(allErrors: true);
 
 export async function validateSchema(dirName: string, fileName: string) {
   const schemaPath = path.join(
@@ -10,7 +12,9 @@ export async function validateSchema(dirName: string, fileName: string) {
     `${fileName}_schema.json`
   );
   const schema = await loadSchema(schemaPath);
-  console.log(schema);
+  const validate = ajv.compile(schema);
+  const valid = validate(data)
+  if(!valid) console.log(validate.errors)
 }
 
 async function loadSchema(schemaPath: string) {
