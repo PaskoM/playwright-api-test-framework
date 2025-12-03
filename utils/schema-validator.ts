@@ -3,9 +3,13 @@ import path from "path";
 import Ajv from "ajv";
 
 const SCHEMA_BASE_PATH = "./response-schemas";
-const ajv = new Ajv(allErrors: true);
+const ajv = new Ajv({ allErrors: true });
 
-export async function validateSchema(dirName: string, fileName: string) {
+export async function validateSchema(
+  dirName: string,
+  fileName: string,
+  responseBody: object
+) {
   const schemaPath = path.join(
     SCHEMA_BASE_PATH,
     dirName,
@@ -13,8 +17,15 @@ export async function validateSchema(dirName: string, fileName: string) {
   );
   const schema = await loadSchema(schemaPath);
   const validate = ajv.compile(schema);
-  const valid = validate(data)
-  if(!valid) console.log(validate.errors)
+  const valid = validate(responseBody);
+  if (!valid) {
+    throw new Error(
+      `schema validation ${fileName}_schema.json failed: \n` +
+        `${JSON.stringify(validate.errors, null, 4)}\n\n` +
+        `Actual response body: \n` +
+        `${JSON.stringify(responseBody, null, 4)}`
+    );
+  }
 }
 
 async function loadSchema(schemaPath: string) {
