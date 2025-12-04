@@ -20,7 +20,7 @@ test("Get tags", async ({ api }) => {
 });
 
 test("Create and delete article", async ({ api }) => {
-  const articleRequest = JSON.parse(JSON.stringify(articleRequestPayload)); //paraller execution
+  const articleRequest = JSON.parse(JSON.stringify(articleRequestPayload)); //parallel execution
   articleRequestPayload.article.title = "Object title";
   const newArticleResponse = await api
     .path("/articles/")
