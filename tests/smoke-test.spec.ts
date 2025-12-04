@@ -1,5 +1,6 @@
 import { test } from "../utils/fixtures";
 import { expect } from "../utils/custom-expect";
+import articleRequestPayload from "../request-objects/POST-article.json";
 
 test("Get articles", async ({ api }) => {
   const response = await api
@@ -19,43 +20,33 @@ test("Get tags", async ({ api }) => {
 });
 
 test("Create and delete article", async ({ api }) => {
-  // Create article
+  const articleRequest = JSON.parse(JSON.stringify(articleRequestPayload)); //paraller execution
+  articleRequestPayload.article.title = "Object title";
   const newArticleResponse = await api
     .path("/articles/")
-    .body({
-      article: {
-        title: "Test Article ",
-        description: "Test Article Subject",
-        body: "Test Article Description",
-        tagList: [],
-      },
-    })
+    .body(articleRequest)
     .postRequest(201);
   await expect(newArticleResponse).shouldMatchSchema(
     "articles",
     "POST_articles",
     true
   );
-  expect(newArticleResponse.article.title).shouldEqual("Test Article ");
+  expect(newArticleResponse.article.title).shouldEqual("Object title");
   const slugId = newArticleResponse.article.slug;
 
-  // Verify article creation
   const articlesListResponse = await api
     .path("/articles")
     .params({ limit: 10, offset: 0 })
     .getRequest(200);
-  expect(articlesListResponse.articles[0].title).shouldEqual("Test Article ");
+  expect(articlesListResponse.articles[0].title).shouldEqual("Object title");
 
-  // Delete article
   await api.path(`/articles/${slugId}`).deleteRequest(204);
 
   const articlesResponseRow = await api
     .path("/articles")
     .params({ limit: 10, offset: 0 })
     .getRequest(200);
-  expect(articlesResponseRow.articles[0].title).not.shouldEqual(
-    "Test Article "
-  );
+  expect(articlesResponseRow.articles[0].title).not.shouldEqual("Object title");
 });
 
 test("Create, Update and Delete article", async ({ api }) => {
