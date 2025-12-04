@@ -1,6 +1,8 @@
 import { test } from "../utils/fixtures";
 import { expect } from "../utils/custom-expect";
 import articleRequestPayload from "../request-objects/POST-article.json";
+import { faker } from "@faker-js/faker";
+import { getNewRandomArticle } from "../utils/data-generator";
 
 test("Get articles", async ({ api }) => {
   const response = await api
@@ -20,8 +22,7 @@ test("Get tags", async ({ api }) => {
 });
 
 test("Create and delete article", async ({ api }) => {
-  const articleRequest = JSON.parse(JSON.stringify(articleRequestPayload)); //parallel execution
-  articleRequestPayload.article.title = "Object title";
+  const articleRequest = getNewRandomArticle();
   const newArticleResponse = await api
     .path("/articles/")
     .body(articleRequest)
@@ -31,14 +32,18 @@ test("Create and delete article", async ({ api }) => {
     "POST_articles",
     true
   );
-  expect(newArticleResponse.article.title).shouldEqual("Object title");
+  expect(newArticleResponse.article.title).shouldEqual(
+    articleRequest.article.title
+  );
   const slugId = newArticleResponse.article.slug;
 
   const articlesListResponse = await api
     .path("/articles")
     .params({ limit: 10, offset: 0 })
     .getRequest(200);
-  expect(articlesListResponse.articles[0].title).shouldEqual("Object title");
+  expect(articlesListResponse.articles[0].title).shouldEqual(
+    articleRequest.article.title
+  );
 
   await api.path(`/articles/${slugId}`).deleteRequest(204);
 
@@ -46,45 +51,31 @@ test("Create and delete article", async ({ api }) => {
     .path("/articles")
     .params({ limit: 10, offset: 0 })
     .getRequest(200);
-  expect(articlesResponseRow.articles[0].title).not.shouldEqual("Object title");
+  expect(articlesResponseRow.articles[0].title).not.shouldEqual(
+    articleRequest.article.title
+  );
 });
 
 test("Create, Update and Delete article", async ({ api }) => {
-  // Create article
+  const articleTitle = faker.lorem.sentence(5);
+  const articleRequest = JSON.parse(JSON.stringify(articleRequestPayload)); //parallel execution
+  articleRequest.article.title = articleTitle;
   const newArticleResponse = await api
     .path("/articles/")
-    .body({
-      article: {
-        title: "Test Article to Update",
-        description: "Test Article Subject",
-        body: "Test Article Description",
-        tagList: [],
-      },
-    })
+    .body(articleRequest)
     .postRequest(201);
-  expect(newArticleResponse.article.title).shouldEqual(
-    "Test Article to Update"
-  );
+  expect(newArticleResponse.article.title).shouldEqual(articleTitle);
   const slugId = newArticleResponse.article.slug;
 
-  // Update article
+  const updatedArticleTitle = faker.lorem.sentence(5);
+  articleRequest.article.title = updatedArticleTitle;
   const updatedArticleResponse = await api
     .path(`/articles/${slugId}`)
-    .body({
-      article: {
-        title: "Updated Test Article",
-        description: "Updated Subject",
-        body: "Updated Description",
-        tagList: ["updated"],
-      },
-    })
+    .body(articleRequest)
     .putRequest(200);
-  expect(updatedArticleResponse.article.title).shouldEqual(
-    "Updated Test Article"
-  );
+  expect(updatedArticleResponse.article.title).shouldEqual(updatedArticleTitle);
   const newSlugId = updatedArticleResponse.article.slug;
 
-  // Delete article
   await api.path(`/articles/${newSlugId}`).deleteRequest(204);
 
   const articlesResponseRow = await api
@@ -92,6 +83,6 @@ test("Create, Update and Delete article", async ({ api }) => {
     .params({ limit: 10, offset: 0 })
     .getRequest(200);
   expect(articlesResponseRow.articles[0].title).not.shouldEqual(
-    "Updated Test Article"
+    updatedArticleTitle
   );
 });
