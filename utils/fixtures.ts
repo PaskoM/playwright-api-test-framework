@@ -18,8 +18,8 @@ export const test = base.extend<Fixtures, WorkerFixture>({
   authToken: [
     async ({}, use) => {
       const authToken = await createToken(
-        config.userEmail,
-        config.userPassword
+        config.userEmail!,
+        config.userPassword!
       );
       await use(authToken);
     },
